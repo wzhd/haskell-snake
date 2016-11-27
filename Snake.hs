@@ -23,9 +23,9 @@ data State = State {
 
 main :: IO State
 main = clearScreen
-    >> initialState 
+    >> initialState
     >>= (iterateUntilM gameOver step)
-               
+
 oneSecond :: Int
 oneSecond = (10 :: Int) ^ (6 :: Int)
 
@@ -33,7 +33,7 @@ sampleLength :: Int
 sampleLength = oneSecond `div` 4
 
 initialState :: IO State
-initialState = getStdGen 
+initialState = getStdGen
     >>= \stdGen -> return State {
         board = 15,
         snake = [(4, 0), (3, 0), (2, 0), (1, 0), (0, 0)],
@@ -57,13 +57,13 @@ newFruit state@(State { fruit = Just (_, stdGen) })
               validPositions = allPositions \\ snake state
 
 step :: State -> IO State
-step state = sample sampleLength getInput 
+step state = sample sampleLength getInput
     >>= \ inputMove ->
         displayState $ updateState state (vectorFromChar inputMove)
 
 displayState :: State -> IO State
-displayState state = setCursorPosition 0 0 
-    >> putStr (render state) 
+displayState state = setCursorPosition 0 0
+    >> putStr (render state)
     >> return state
 
 vectorFromChar :: Maybe Char -> Maybe Vector
@@ -74,7 +74,7 @@ vectorFromChar (Just 'd') = Just ( 1,  0)
 vectorFromChar _          = Nothing
 
 getInput :: IO Char
-getInput = hSetEcho stdin False 
+getInput = hSetEcho stdin False
     >> hSetBuffering stdin NoBuffering
     >> getChar
 
@@ -162,5 +162,5 @@ sample n f
     | n <  0    = fmap Just f
     | n == 0    = return Nothing
     | otherwise =
-        concurrently (timeout n f) (threadDelay n) 
+        concurrently (timeout n f) (threadDelay n)
             >>= \ (result, _) -> return result
