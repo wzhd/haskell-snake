@@ -15,7 +15,7 @@ import Control.Applicative
 type Vector = (Int, Int)
 
 data State = State {
-    board :: Int,
+    board :: (Int, Int),
     snake :: [Vector],
     fruit :: Maybe (Vector, StdGen),
     move  :: Maybe Vector
@@ -35,9 +35,9 @@ sampleLength = oneSecond `div` 4
 initialState :: IO State
 initialState = getStdGen
     >>= \stdGen -> return State {
-        board = 25,
+        board = (80, 25),
         snake = [(4, 0), (3, 0), (2, 0), (1, 0), (0, 0)],
-        fruit = randomElem (concat (buildBoard 15)) stdGen,
+        fruit = randomElem (concat (buildBoard (80, 25))) stdGen,
         move  = Just (1, 0)
     }
 
@@ -84,8 +84,8 @@ gameOver (State {
     board = boardSize,
     snake = (snakeHead@(snakeHeadX, snakeHeadY):snakeBody)
 })
-    | snakeHeadX >= boardSize || snakeHeadX < 0 = True
-    | snakeHeadY >= boardSize || snakeHeadY < 0 = True
+    | snakeHeadX >= fst boardSize || snakeHeadX < 0 = True
+    | snakeHeadY >= snd boardSize || snakeHeadY < 0 = True
     | snakeHead `elem` snakeBody                = True
     | otherwise                                 = False
 
@@ -95,10 +95,10 @@ render state
               $ map (renderRow state)
               $ buildBoard (board state)
 
-applyBorder :: Int -> [String] -> [String]
-applyBorder size renderedRows
+applyBorder :: (Int, Int) -> [String] -> [String]
+applyBorder (sizex, sizey) renderedRows
     = border ++ map (\row -> "X" ++ row ++ "X") renderedRows ++ border
-        where border = [replicate (size + 2) 'X']
+        where border = [replicate (sizex + 2) 'X']
 
 renderRow :: State -> [Vector] -> String
 renderRow state = map (characterForPosition state)
@@ -117,9 +117,9 @@ snakeHasFruitInMouth :: State -> Bool
 snakeHasFruitInMouth state
     = fruit state `fruitPositionEquals` head (snake state)
 
-buildBoard :: Int -> [[(Int, Int)]]
-buildBoard size
-    = [[(x, y) | x <- [0 .. size - 1]] | y <- reverse [0 .. size - 1]]
+buildBoard :: (Int, Int) -> [[(Int, Int)]]
+buildBoard (sizex, sizey)
+    = [[(x, y) | x <- [0 .. sizex - 1]] | y <- reverse [0 .. sizey - 1]]
 
 updateState :: State -> Maybe Vector -> State
 updateState state inputMove
