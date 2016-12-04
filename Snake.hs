@@ -97,15 +97,15 @@ render state
 
 applyBorder :: (Int, Int) -> [String] -> [String]
 applyBorder (sizex, sizey) renderedRows
-    = border ++ map (\row -> "X" ++ row ++ "X") renderedRows ++ border
-        where border = [replicate (sizex + 2) 'X']
+    = [replicate (sizex + 2) '▀'] ++ map (\row -> "█" ++ row ++ "█") renderedRows ++ [replicate (sizex + 2) '▄']
+
 
 renderRow :: State -> [Vector] -> String
 renderRow state = map (characterForPosition state)
 
 characterForPosition :: State -> Vector -> Char
 characterForPosition state position
-    | position `elem` snake state                = '#'
+    | position `elem` snake state                = '▀'
     | fruit state `fruitPositionEquals` position = '@'
     | otherwise                                  = ' '
 
