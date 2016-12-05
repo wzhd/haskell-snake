@@ -35,9 +35,9 @@ sampleLength = oneSecond `div` 4
 initialState :: IO State
 initialState = getStdGen
     >>= \stdGen -> return State {
-        board = (80, 26),
+        board = (20, 26),
         snake = [(4, 0), (3, 0), (2, 0), (1, 0), (0, 0)],
-        fruit = randomElem (concat (buildBoard (80, 26))) stdGen,
+        fruit = randomElem (concat (buildBoard (20, 26))) stdGen,
         move  = Just (1, 0)
     }
 
