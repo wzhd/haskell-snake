@@ -63,7 +63,7 @@ step state = sample sampleLength getInput
 
 displayState :: State -> IO State
 displayState state = setCursorPosition 0 0
-    >> putStr (render state)
+    >> putStr  ((render state) ++ "Length of snake: " ++ (show . length $ snake state))
     >> return state
 
 vectorFromChar :: Maybe Char -> Maybe Vector
