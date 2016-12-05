@@ -35,9 +35,9 @@ sampleLength = oneSecond `div` 4
 initialState :: IO State
 initialState = getStdGen
     >>= \stdGen -> return State {
-        board = (80, 25),
+        board = (80, 26),
         snake = [(4, 0), (3, 0), (2, 0), (1, 0), (0, 0)],
-        fruit = randomElem (concat (buildBoard (80, 25))) stdGen,
+        fruit = randomElem (concat (buildBoard (80, 26))) stdGen,
         move  = Just (1, 0)
     }
 
@@ -67,9 +67,9 @@ displayState state = setCursorPosition 0 0
     >> return state
 
 vectorFromChar :: Maybe Char -> Maybe Vector
-vectorFromChar (Just 'w') = Just ( 0,  1)
+vectorFromChar (Just 'w') = Just ( 0, -1)
 vectorFromChar (Just 'a') = Just (-1,  0)
-vectorFromChar (Just 's') = Just ( 0, -1)
+vectorFromChar (Just 's') = Just ( 0,  1)
 vectorFromChar (Just 'd') = Just ( 1,  0)
 vectorFromChar _          = Nothing
 
@@ -91,22 +91,42 @@ gameOver (State {
 
 render :: State -> String
 render state
-    = unlines $ applyBorder (board state)
-              $ map (renderRow state)
-              $ buildBoard (board state)
+    = unlines $ map (\row -> "█" ++ row ++ "█") $ [renderFirstRow state first_row] ++ map (renderRow state) rows ++ [renderLastRow state last_row]
+    where
+      first_row = [(x, 0) | x <- [0 .. sizex - 1]]
+      rows = [[(x, y) | x <- [0 .. sizex - 1]] | y <- [1, 3 .. sizey - 3] ]
+      last_row = [(x, sizey-1) | x <- [0 .. sizex - 1]]
+      (sizex, sizey) = board state
 
-applyBorder :: (Int, Int) -> [String] -> [String]
-applyBorder (sizex, sizey) renderedRows
-    = [replicate (sizex + 2) '▀'] ++ map (\row -> "█" ++ row ++ "█") renderedRows ++ [replicate (sizex + 2) '▄']
+renderFirstRow :: State -> [Vector] -> String
+renderFirstRow state positions = map (characterForTopPosition state) positions
+
+characterForTopPosition :: State -> Vector -> Char
+characterForTopPosition state (x, 0)
+  | (x, 0) `elem` snake state                = '█'
+  | fruit state `fruitPositionEquals` (x, 0) = '█'
+  | otherwise                                = '▀'
+
+renderLastRow :: State -> [Vector] -> String
+renderLastRow state positions = map (characterForBottomPosition state) positions
+
+characterForBottomPosition :: State -> Vector -> Char
+characterForBottomPosition state (x, y)
+  | (x, y) `elem` snake state                = '█'
+  | fruit state `fruitPositionEquals` (x, y) = '█'
+  | otherwise                                = '▄'
 
 
 renderRow :: State -> [Vector] -> String
 renderRow state = map (characterForPosition state)
 
 characterForPosition :: State -> Vector -> Char
-characterForPosition state position
-    | position `elem` snake state                = '▀'
-    | fruit state `fruitPositionEquals` position = '@'
+characterForPosition state (x,y)
+    | and [(x, y) `elem` snake state, (x, y+1) `elem` snake state] = '█'
+    | (x, y) `elem` snake state                  = '▀'
+    | (x, y+1) `elem` snake state                = '▄'
+    | fruit state `fruitPositionEquals` (x, y)   = '▀'
+    | fruit state `fruitPositionEquals` (x, y+1) = '▄'
     | otherwise                                  = ' '
 
 fruitPositionEquals :: Maybe (Vector, StdGen) -> Vector -> Bool
