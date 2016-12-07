@@ -122,7 +122,7 @@ renderRow state = map (characterForPosition state)
 
 characterForPosition :: State -> Vector -> Char
 characterForPosition state (x,y)
-    | and [(x, y) `elem` snake state, (x, y+1) `elem` snake state] = '█'
+    | and $ map (`elem` snake state) [(x, y), (x, y+1)] = '█'
     | (x, y) `elem` snake state                  = '▀'
     | (x, y+1) `elem` snake state                = '▄'
     | fruit state `fruitPositionEquals` (x, y)   = '▀'
